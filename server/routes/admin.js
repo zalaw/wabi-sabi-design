@@ -119,16 +119,17 @@ router.post("/upload", upload.array("images"), async (req, res) => {
 
       const buffer = await sharp(file.path).toBuffer();
 
-      console.log("file.originalname");
-      console.log(file.originalname);
-      console.log(file.originalname.split("."));
-      console.log(file.originalname.split(".").at(-1));
-      console.log(`Key: ${file.filename}.${file.originalname.split(".").at(-1)}`);
+      //   console.log(JSON.stringify(file, null, 2));
+      //   console.log("file.originalname");
+      //   console.log(file.originalname);
+      //   console.log(file.originalname.split("."));
+      //   console.log(file.originalname.split(".").pop());
+      //   console.log(`Key: ${file.filename}.${file.originalname.split(".").at(-1)}`);
 
       const s3res = await s3
         .upload({
           Bucket: "bababui-test",
-          Key: `${file.filename}.${file.originalname.split(".").at(-1)}`,
+          Key: `${file.filename}.${file.originalname.split(".").pop()}`,
           Body: buffer,
           ACL: "public-read",
         })
