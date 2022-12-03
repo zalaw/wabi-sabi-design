@@ -1,0 +1,36 @@
+GET http://localhost:3000/test/projectsdaw
+
+###
+
+GET http://localhost:3000/test/projects/629a1f88028c7437b8c09667
+
+###
+
+GET http://localhost:3000/api/admin/messages
+Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwicGFzc3dvcmQiOiJvbGEiLCJpYXQiOjE2NTQ3MTQwMzYsImV4cCI6MTY1NDcxNzYzNn0._TDwLT13A7j6xMuzGGlDJ_00ucq6B9HceEnH51Um4no
+
+###
+
+POST http://localhost:3000/test/projects
+Content-Type: application/json
+
+{
+    "title": "Third project"
+}
+
+
+###
+
+POST http://localhost:3000/api/admin/projects
+Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiYWRtaW4iLCJpYXQiOjE2NTUzNjgzNzksImV4cCI6MTY1NTM3MTk3OX0.NHFysUXLNRGzOKzhFhQPMawwv_kvsYv-PsyZETDJcVM
+Content-Type: application/json
+
+###
+
+PATCH http://localhost:3000/api/admin/projects
+Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiYWRtaW4iLCJpYXQiOjE2NTUzNjgzNzksImV4cCI6MTY1NTM3MTk3OX0.NHFysUXLNRGzOKzhFhQPMawwv_kvsYv-PsyZETDJcVM
+Content-Type: application/json
+
+{
+    "id": "62a9be4b794acbdd71b101cc"
+}
