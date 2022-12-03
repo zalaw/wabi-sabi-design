@@ -121,6 +121,7 @@ router.post("/upload", upload.array("images"), async (req, res) => {
 
       console.log("file.originalname");
       console.log(file.originalname);
+      console.log(file.originalname.split("."));
       console.log(file.originalname.split(".").at(-1));
       console.log(`Key: ${file.filename}.${file.originalname.split(".").at(-1)}`);
 
