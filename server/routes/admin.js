@@ -63,7 +63,7 @@ router.patch("/projects", async (req, res) => {
       await s3
         .deleteObject({
           Bucket: "bababui-test",
-          Key: image.split("/").at(-1),
+          Key: image.split("/").pop(),
         })
         .promise();
     }
@@ -93,7 +93,7 @@ router.delete("/projects/:projectId", async (req, res) => {
       await s3
         .deleteObject({
           Bucket: "bababui-test",
-          Key: image.split("/").at(-1),
+          Key: image.split("/").pop(),
         })
         .promise();
     }
