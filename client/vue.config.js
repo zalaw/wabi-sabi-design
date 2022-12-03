@@ -7,7 +7,10 @@ module.exports = defineConfig({
   devServer: {
     proxy: {
       "/api": {
-        target: "https://wabi-sabi-design-api.onrender.com/",
+        target:
+          process.env.NODE_ENV === "development"
+            ? "http://localhost:3000"
+            : "https://wabi-sabi-design-api.onrender.com/",
       },
     },
   },

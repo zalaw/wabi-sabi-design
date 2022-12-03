@@ -23,8 +23,8 @@ export default {
     NotificationToast,
   },
   async mounted() {
-    console.log(process.env.VUE_APP_TEST);
     try {
+      console.log(process.env.NODE_ENV);
       const response = await axios.get("/api/public/logged-in");
 
       this.$store.dispatch("setLoggedIn", response.data.loggedIn);

@@ -1,9 +1,11 @@
 <template>
   <div v-if="loaded" class="view-container">
-    <FullScreenImage v-if="imageSelectedIndex !== -1"
-                        @handleCloseFullScreenImage="imageSelectedIndex = -1" 
-                        :images="option.selected.images"
-                        :index="imageSelectedIndex" />
+    <FullScreenImage
+      v-if="imageSelectedIndex !== -1"
+      @handleCloseFullScreenImage="imageSelectedIndex = -1"
+      :images="option.selected.images"
+      :index="imageSelectedIndex"
+    />
 
     <div class="projects-container">
       <div class="projects-heading">
@@ -11,22 +13,24 @@
       </div>
 
       <div class="select-box">
-        <div class="options-container" :class="{ 'active': option.active && !canEdit }">
+        <div class="options-container" :class="{ active: option.active && !canEdit }">
           <div v-if="loggedIn" class="option" @click="newProject">
             <input type="radio" class="radio" name="project" />
             <label for="default">New project</label>
           </div>
 
-          <div class="option" @click="viewAll" :class="{ 'option-selected': option.selected.title == 'All', }">
+          <div class="option" @click="viewAll" :class="{ 'option-selected': option.selected.title == 'All' }">
             <input type="radio" class="radio" name="project" />
             <label for="default">All</label>
           </div>
 
-          <div  v-for="(item, index) in projects" 
-                :key="index" 
-                :class="{ 'option-selected': index == option.index, 'text-overflow': loggedIn }" 
-                class="option" 
-                @click="selectOption(item, index)">
+          <div
+            v-for="(item, index) in projects"
+            :key="index"
+            :class="{ 'option-selected': index == option.index, 'text-overflow': loggedIn }"
+            class="option"
+            @click="selectOption(item, index)"
+          >
             <input type="radio" class="radio" :id="item.title" name="project" />
             <label for="default">{{ item.title }}</label>
             <i v-if="loggedIn" @click.stop="deleteProject(item._id)" class="delete-project fas fa-trash"></i>
@@ -35,28 +39,58 @@
 
         <div class="selected-container">
           <div class="selected" @click="option.active = !option.active">
-            <input ref="project" class="input-edit-project" :class="{ 'text-overflow-input': loggedIn }" :disabled="!canEdit" type="text" @click.stop @keyup.enter="editProject" :value="option.selected.title" />
-            <i v-if="loggedIn && option.selected && option.selected.title != 'All' && !canEdit" @click.stop="editProjectClicked()" class="edit-project fas fa-pen"></i>
+            <input
+              ref="project"
+              class="input-edit-project"
+              :class="{ 'text-overflow-input': loggedIn }"
+              :disabled="!canEdit"
+              type="text"
+              @click.stop
+              @keyup.enter="editProject"
+              :value="option.selected.title"
+            />
+            <i
+              v-if="loggedIn && option.selected && option.selected.title != 'All' && !canEdit"
+              @click.stop="editProjectClicked()"
+              class="edit-project fas fa-pen"
+            ></i>
           </div>
 
           <div v-if="canEdit" class="action">
-            <div class="action-main">
-              Editing
-            </div>
+            <div class="action-main">Editing</div>
             <div class="action-buttons">
               <Button @click.native="editProject" text="Save" :class="['button-action', 'primary']" />
               <Button @click.native="cancelEdit" text="Cancel" :class="['button-action']" />
             </div>
           </div>
-
         </div>
       </div>
 
       <div v-if="option.selected !== null" class="gallery-container">
-        <div style="padding-bottom: 1rem; display: flex; align-items: center; gap: 1rem;" v-if="loggedIn && !canEdit && option.selected !== null && option.selected.title != 'All' && option.selected.images.length > 0">
-          <Button @click.native="deleteImages" :text="deleteImagesClicked ? 'Delete images' : 'Select images to delete'" :class="['button-action', 'critical']" />
-          <Button v-if="deleteImagesClicked" @click.native="deleteImagesClicked = false, imagesSelected = []" text="Cancel" :class="['button-action']" />
-          <span v-if="imagesSelected.length > 0">{{ imagesSelected.length }} / {{ option.selected.images.length }}</span>
+        <div
+          style="padding-bottom: 1rem; display: flex; align-items: center; gap: 1rem"
+          v-if="
+            loggedIn &&
+            !canEdit &&
+            option.selected !== null &&
+            option.selected.title != 'All' &&
+            option.selected.images.length > 0
+          "
+        >
+          <Button
+            @click.native="deleteImages"
+            :text="deleteImagesClicked ? 'Delete images' : 'Select images to delete'"
+            :class="['button-action', 'critical']"
+          />
+          <Button
+            v-if="deleteImagesClicked"
+            @click.native="(deleteImagesClicked = false), (imagesSelected = [])"
+            text="Cancel"
+            :class="['button-action']"
+          />
+          <span v-if="imagesSelected.length > 0"
+            >{{ imagesSelected.length }} / {{ option.selected.images.length }}</span
+          >
         </div>
 
         <div v-if="!isNewProject && option.selected.images.length == 0" class="no-images">
@@ -66,17 +100,28 @@
           </div>
         </div>
 
-        <div v-if="imagesToUpload.length > 0" style="padding-bottom: 1rem; display: flex; align-items: center; gap: 1rem;">
+        <div
+          v-if="imagesToUpload.length > 0"
+          style="padding-bottom: 1rem; display: flex; align-items: center; gap: 1rem"
+        >
           <Button text="Upload" @click.native="onUpload" :class="['button-action', 'good']" />
-          <Button @click.native="imagesToUpload = [], imagesToUploadServer = []" text="Cancel" :class="['button-action']" />
+          <Button
+            @click.native="(imagesToUpload = []), (imagesToUploadServer = [])"
+            text="Cancel"
+            :class="['button-action']"
+          />
         </div>
 
         <div v-if="isNewProject">
           <h1 class="text-center">Save the project then upload the photos</h1>
         </div>
 
-        <div v-else class="gallery"> 
-          <div v-if="loggedIn && option.selected.title != 'All'" class="image-container add-new-project" @click="addNewImagesClicked">
+        <div v-else class="gallery">
+          <div
+            v-if="loggedIn && option.selected.title != 'All'"
+            class="image-container add-new-project"
+            @click="addNewImagesClicked"
+          >
             <i class="fas fa-plus-circle"></i>
             <form enctype="multipart/form-data">
               <input multiple accept="image/*" ref="images" class="pick-images" type="file" @change="onFilesSelected" />
@@ -85,14 +130,20 @@
 
           <div v-for="(image, index) in imagesToUpload" :key="index" class="image-container preview">
             <div class="cta">
-              <i class="remove-from-upload fas fa-ban" @click="imagesToUpload.splice(index, 1); imagesToUploadServer.splice(index, 1)"></i>
+              <i
+                class="remove-from-upload fas fa-ban"
+                @click="
+                  imagesToUpload.splice(index, 1);
+                  imagesToUploadServer.splice(index, 1);
+                "
+              ></i>
               <span>New</span>
             </div>
 
             <div v-if="image.invalidMessage" class="img-overlay">
               <div>
                 <p>This image won't be uploaded</p>
-                <p>{{image.invalidMessage}}</p>
+                <p>{{ image.invalidMessage }}</p>
               </div>
             </div>
 
@@ -100,7 +151,7 @@
           </div>
 
           <div v-for="(image, index) in option.selected.images" :key="`${index}a`" class="image-container">
-            <input :class="{ 'visible': deleteImagesClicked }" type="checkbox" :value="image" v-model="imagesSelected">
+            <input :class="{ visible: deleteImagesClicked }" type="checkbox" :value="image" v-model="imagesSelected" />
             <img :src="image" @click="selectImage(index)" />
           </div>
         </div>
@@ -111,20 +162,20 @@
 
 <script>
 //import MainService from '../MainService'
-import axios from 'axios'
-import _ from 'lodash'
+import axios from "axios";
+import _ from "lodash";
 
-import FullScreenImage from '../components/FullScreenImage.vue'
-import Button from '../components/Button.vue'
+import FullScreenImage from "../components/FullScreenImage.vue";
+import Button from "../components/Button.vue";
 
 export default {
-  name: 'ProjectsView',
+  name: "ProjectsView",
   components: {
     FullScreenImage,
-    Button
+    Button,
   },
   props: {
-    project: Object
+    project: Object,
   },
   data() {
     return {
@@ -139,144 +190,151 @@ export default {
       option: {
         active: false,
         selected: null,
-        index: -1
+        index: -1,
       },
       imageSelectedIndex: -1,
-    }
+    };
   },
   methods: {
     async deleteImages() {
       if (!this.deleteImagesClicked) {
-        this.deleteImagesClicked = true
+        this.deleteImagesClicked = true;
       } else {
-        this.option.selected.images = this.option.selected.images.filter(image => !this.imagesSelected.includes(image))
+        this.option.selected.images = this.option.selected.images.filter(image => !this.imagesSelected.includes(image));
 
         try {
-          const response = await axios.patch('/api/admin/projects', { id: this.option.selected._id, title: this.option.selected.title, images: this.option.selected.images })
+          const response = await axios.patch("/api/admin/projects", {
+            id: this.option.selected._id,
+            title: this.option.selected.title,
+            images: this.option.selected.images,
+          });
 
-          this.$store.dispatch('updateProject', response.data.project)
-          this.$store.dispatch('setNotification', { error: response.data.isError, text: response.data.message })
+          this.$store.dispatch("updateProject", response.data.project);
+          this.$store.dispatch("setNotification", { error: response.data.isError, text: response.data.message });
 
-          this.deleteImagesClicked = false
+          this.deleteImagesClicked = false;
         } catch (err) {
-          console.log(err)
+          console.log(err);
         }
       }
 
-      this.imagesSelected = []
+      this.imagesSelected = [];
     },
     cancelEdit() {
-      this.option.active = false
-      this.canEdit = false
+      this.option.active = false;
+      this.canEdit = false;
 
       if (this.isNewProject) {
-        this.option.selected = null
-        this.option.index = -1
-        this.isNewProject = false
-        this.viewAll()
+        this.option.selected = null;
+        this.option.index = -1;
+        this.isNewProject = false;
+        this.viewAll();
       }
     },
     editProjectClicked() {
-      this.canEdit = true
+      this.canEdit = true;
     },
     async editProject() {
-      this.option.selected.title = document.querySelector('.input-edit-project').value
+      this.option.selected.title = document.querySelector(".input-edit-project").value;
 
       if (this.isNewProject) {
         try {
-          const response = await axios.post('/api/admin/projects', this.option.selected)
+          const response = await axios.post("/api/admin/projects", this.option.selected);
 
-          this.$store.dispatch('addProject', response.data.project)
-          this.$store.dispatch('setNotification', { error: response.data.isError, text: response.data.message })
+          this.$store.dispatch("addProject", response.data.project);
+          this.$store.dispatch("setNotification", { error: response.data.isError, text: response.data.message });
 
-          this.option.selected = response.data.project
+          this.option.selected = response.data.project;
         } catch (err) {
-          console.log(err)
+          console.log(err);
         }
       } else {
         try {
-          const response = await axios.patch('/api/admin/projects', { id: this.option.selected._id, title: this.option.selected.title, images: this.option.selected.images })
+          const response = await axios.patch("/api/admin/projects", {
+            id: this.option.selected._id,
+            title: this.option.selected.title,
+            images: this.option.selected.images,
+          });
 
-          this.$store.dispatch('updateProject', response.data.project)
-          this.$store.dispatch('setNotification', { error: response.data.isError, text: response.data.message })
+          this.$store.dispatch("updateProject", response.data.project);
+          this.$store.dispatch("setNotification", { error: response.data.isError, text: response.data.message });
         } catch (err) {
-          console.log(err)
-
+          console.log(err);
         }
       }
 
-      this.canEdit = false
-      this.isNewProject = false
+      this.canEdit = false;
+      this.isNewProject = false;
     },
     async deleteProject(id) {
-      if(confirm('Are you sure you want to delete this project?')) {
+      if (confirm("Are you sure you want to delete this project?")) {
         try {
-          const response = await axios.delete(`/api/admin/projects/${id}`)
+          const response = await axios.delete(`/api/admin/projects/${id}`);
 
-          this.$store.dispatch('deleteProject', id)
-          this.$store.dispatch('setNotification', { error: response.data.isError, text: response.data.message })
+          this.$store.dispatch("deleteProject", id);
+          this.$store.dispatch("setNotification", { error: response.data.isError, text: response.data.message });
 
-          this.viewAll()
+          this.viewAll();
         } catch (err) {
-          console.log(err)
-          this.$store.dispatch('setNotification', { error: true, text: err.response.data.error })
+          console.log(err);
+          this.$store.dispatch("setNotification", { error: true, text: err.response.data.error });
         }
       }
     },
     viewAll() {
-      var images = []
+      var images = [];
 
       this.projects.forEach(project => {
-        images = [...images, ...project.images]
-      })
+        images = [...images, ...project.images];
+      });
 
       this.option = {
         active: false,
-        selected: { 
-          title: 'All',
-          images: images
+        selected: {
+          title: "All",
+          images: images,
         },
-        index: -1
-      }
+        index: -1,
+      };
     },
     newProject() {
-      this.imagesToUploadServer = []
-      this.imagesToUpload = []
-      this.imagesSelected = []
+      this.imagesToUploadServer = [];
+      this.imagesToUpload = [];
+      this.imagesSelected = [];
 
       this.option = {
         active: true,
-        selected: { 
+        selected: {
           title: `New project ${this.projects.length}`,
-          images: []
+          images: [],
         },
-        index: 0
-      }
+        index: 0,
+      };
 
-      this.isNewProject = true
+      this.isNewProject = true;
 
       setTimeout(() => {
-        document.querySelector('.edit-project').click()
-      }, 1)
+        document.querySelector(".edit-project").click();
+      }, 1);
     },
     selectOption(item, index) {
-      this.imagesToUploadServer = []
-      this.imagesToUpload = []
-      this.deleteImagesClicked = false
-      this.imagesSelected = []
-      this.isNewProject = false
-      this.option.active = false
-      this.option.selected=  item
-      this.option.index = index
+      this.imagesToUploadServer = [];
+      this.imagesToUpload = [];
+      this.deleteImagesClicked = false;
+      this.imagesSelected = [];
+      this.isNewProject = false;
+      this.option.active = false;
+      this.option.selected = item;
+      this.option.index = index;
     },
     selectImage(index) {
-      this.imageSelectedIndex = index
+      this.imageSelectedIndex = index;
     },
     addNewImagesClicked() {
-      document.querySelector('.pick-images').click()
+      document.querySelector(".pick-images").click();
     },
     onFilesSelected() {
-      this.imagesToUploadServer = [...this.imagesToUploadServer, ...this.$refs.images.files]
+      this.imagesToUploadServer = [...this.imagesToUploadServer, ...this.$refs.images.files];
       this.imagesToUpload = [
         ...this.imagesToUpload,
         ..._.map(this.$refs.images.files, image => ({
@@ -284,67 +342,67 @@ export default {
           size: image.size,
           type: image.type,
           preview: URL.createObjectURL(image),
-          invalidMessage: this.validateImage(image)
-        }))
-      ]
+          invalidMessage: this.validateImage(image),
+        })),
+      ];
     },
     validateImage(image) {
       const MAX_SIZE = 1000000;
-      const allowedTypes = ['image/jpeg', 'image/png']
+      const allowedTypes = ["image/jpeg", "image/png"];
 
-      if (image.size > MAX_SIZE) return `Max size allowed: ${MAX_SIZE / 1000000} MB`
-      if (!allowedTypes.includes(image.type)) return 'Not an image'
+      if (image.size > MAX_SIZE) return `Max size allowed: ${MAX_SIZE / 1000000} MB`;
+      if (!allowedTypes.includes(image.type)) return "Not an image";
 
-      return ''
+      return "";
     },
     async onUpload() {
-      const formData = new FormData()
-      
-      formData.append('projectId', this.option.selected._id)
+      const formData = new FormData();
+
+      formData.append("projectId", this.option.selected._id);
 
       _.forEach(this.imagesToUploadServer, image => {
-        if (this.validateImage(image) == '') {
-          formData.append('images', image)
+        if (this.validateImage(image) == "") {
+          formData.append("images", image);
         }
-      })
+      });
 
       try {
-        const response = await axios.post('/api/admin/upload', formData)
-        this.$store.dispatch('updateProject', response.data.project)
-        this.$store.dispatch('setNotification', { isError: false, text: response.data.message })
+        const response = await axios.post("/api/admin/upload", formData);
+        this.$store.dispatch("updateProject", response.data.project);
+        this.$store.dispatch("setNotification", { isError: false, text: response.data.message });
 
-        this.imagesToUploadServer = []
-        this.imagesToUpload = []
+        this.imagesToUploadServer = [];
+        this.imagesToUpload = [];
       } catch (err) {
-        this.$store.dispatch('setNotification', { isError: true, text: err.response.data.error })
+        console.log(err);
+        this.$store.dispatch("setNotification", { isError: true, text: err.response.data.error });
       }
-    }
+    },
   },
   async mounted() {
     try {
-      const response = await axios.get('/api/public/projects')
-      this.$store.dispatch('setProjects', response.data.projects)
+      const response = await axios.get("/api/public/projects");
+      this.$store.dispatch("setProjects", response.data.projects);
     } catch (err) {
-      this.loaded = false
+      this.loaded = false;
     }
 
-    this.viewAll()
-    this.loaded = true
+    this.viewAll();
+    this.loaded = true;
   },
   computed: {
     loggedIn() {
-      return this.$store.getters.getLoggedIn
+      return this.$store.getters.getLoggedIn;
     },
     projects() {
-      return this.$store.getters.getProjects
+      return this.$store.getters.getProjects;
     },
     // getOptionText() {
     //   return this.option.selected?.title ?? 'Select a project'
     // }
-  }
-}
+  },
+};
 </script>
-
 
 <style scoped>
 .no-images {
@@ -410,7 +468,7 @@ export default {
 }
 
 .text-cont i {
-  margin-right: .5rem;
+  margin-right: 0.5rem;
 }
 
 .action {
@@ -422,7 +480,7 @@ export default {
 
 .action-buttons {
   display: flex;
-  gap: .5rem;
+  gap: 0.5rem;
 }
 
 .back {
@@ -431,7 +489,7 @@ export default {
   left: 0;
   cursor: pointer;
   border-bottom: 2px solid transparent;
-  padding: .25rem 0;
+  padding: 0.25rem 0;
 }
 
 .back:hover {
@@ -439,7 +497,7 @@ export default {
 }
 
 .back i {
-  margin-right: .5rem;
+  margin-right: 0.5rem;
 }
 
 .close-projects {
@@ -454,7 +512,7 @@ export default {
   justify-content: center;
   align-items: center;
   border-radius: 50%;
-  transition: .3s all ease-in-out;
+  transition: 0.3s all ease-in-out;
 }
 
 .close-projects:hover {
@@ -481,7 +539,7 @@ export default {
 
 .item {
   background-color: rgb(45, 45, 45);
-  padding: .5rem 1rem;
+  padding: 0.5rem 1rem;
   cursor: pointer;
 }
 
@@ -497,13 +555,15 @@ export default {
 }
 
 .input-edit-project {
-  font-family: 'Poppins', sans-serif;
-  padding: .75rem 1.5rem !important;
-  font-size: .925em;
+  font-family: "Poppins", sans-serif;
+  padding: 0.75rem 1.5rem !important;
+  font-size: 0.925em;
   cursor: pointer;
 }
 
-.delete-project, .edit-project, .edit-project-confirm {
+.delete-project,
+.edit-project,
+.edit-project-confirm {
   color: red;
   font-size: 1.25rem;
   position: absolute;
@@ -519,17 +579,18 @@ export default {
   cursor: pointer;
 }
 
-.delete-project:hover, .edit-project:hover, .edit-project-confirm:hover {
+.delete-project:hover,
+.edit-project:hover,
+.edit-project-confirm:hover {
   background-color: rgb(120, 120, 120);
   width: 32px;
   height: 32px;
 }
 
-.edit-project, .edit-project-confirm {
+.edit-project,
+.edit-project-confirm {
   color: white;
 }
-
-
 
 .select-box {
   display: flex;
@@ -547,14 +608,14 @@ export default {
   width: 100%;
   opacity: 0;
   transition: all 0.3s;
-  border-radius: .5rem;
+  border-radius: 0.5rem;
   overflow: hidden;
   order: 1;
 }
 
 .selected {
   background: rgb(55, 55, 55);
-  border-radius: .5rem;
+  border-radius: 0.5rem;
   color: white;
   position: relative;
   order: 0;
@@ -572,14 +633,14 @@ export default {
 }
 
 .select-box .options-container::-webkit-scrollbar {
-  width: .5rem;
+  width: 0.5rem;
   background: rgb(65, 65, 65);
-  border-radius: 0 .5rem .5rem 0;
+  border-radius: 0 0.5rem 0.5rem 0;
 }
 
 .select-box .options-container::-webkit-scrollbar-thumb {
   background: rgb(85, 85, 85);
-  border-radius: 0 .5rem .5rem 0;
+  border-radius: 0 0.5rem 0.5rem 0;
 }
 
 .option {
@@ -597,7 +658,7 @@ export default {
 }
 
 .select-box .option {
-  padding: .75rem 1.5rem;
+  padding: 0.75rem 1.5rem;
   cursor: pointer;
   position: relative;
   text-overflow: ellipsis;
@@ -655,14 +716,14 @@ export default {
   color: red;
   font-size: 2rem;
   cursor: pointer;
-  transition: .3s all ease-in-out;
+  transition: 0.3s all ease-in-out;
 }
 
 .cta span {
   background-color: #5b92e5;
   color: white;
-  padding: .25em .5em;
-  font-size: .8rem;
+  padding: 0.25em 0.5em;
+  font-size: 0.8rem;
 }
 
 .image-container input[type="checkbox"] {
@@ -696,7 +757,7 @@ export default {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: .3s all ease-in-out;
+  transition: 0.3s all ease-in-out;
   cursor: pointer;
 }
 
@@ -712,7 +773,7 @@ export default {
   color: rgb(55, 55, 55);
   font-size: 4rem;
   cursor: pointer;
-  transition: .3s all ease-in-out;
+  transition: 0.3s all ease-in-out;
   position: relative;
 }
 
@@ -726,7 +787,7 @@ export default {
   font-size: 2rem;
   margin: 0 1rem;
   cursor: pointer;
-  transition: .3s all ease-in-out;
+  transition: 0.3s all ease-in-out;
 }
 
 .add-project:hover {
@@ -740,5 +801,4 @@ export default {
 .preview img:hover {
   transform: none;
 }
-
 </style>
